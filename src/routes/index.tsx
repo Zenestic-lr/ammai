@@ -60,10 +60,14 @@ function Index() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const recorderRef = useRef<Recorder | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     setHistory(loadHistory());
     setReminders(loadReminders());
+    // If she started typing before the page finished loading, keep that text.
+    const typed = inputRef.current?.value;
+    if (typed) setQuestion(typed);
   }, []);
 
   const updateReminders = (items: Reminder[]) => {
@@ -196,10 +200,13 @@ function Index() {
             className="mt-6 flex items-center gap-2 rounded-2xl bg-card p-2"
             onSubmit={(e) => {
               e.preventDefault();
-              void ask(question);
+              const typed = inputRef.current?.value ?? question;
+              setQuestion(typed);
+              void ask(typed);
             }}
           >
             <input
+              ref={inputRef}
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               placeholder="அல்லது இங்கே எழுதுங்க..."
@@ -207,7 +214,7 @@ function Index() {
             />
             <button
               type="submit"
-              disabled={asking || !question.trim()}
+              disabled={asking}
               aria-label="கேள்வி அனுப்ப"
               className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground disabled:opacity-40"
             >
